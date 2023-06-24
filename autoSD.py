@@ -357,14 +357,14 @@ def logic():
     global stability_api
     global speech_config
     global speech_synthesizer
-    speech_synthesizer = ""
+    speech_config = initAzureVoice()
+    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
 
     if running:
         return
     else:
         running = True
-    global speech_config
-    speech_config = initAzureVoice()
+
     
     images_list=[]
     specific_word = "Steps:"
