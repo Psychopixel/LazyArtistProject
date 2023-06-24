@@ -6,3 +6,4 @@ venv/
 images/
 venv.bat
 sd.bat
+.vscode/launch.json

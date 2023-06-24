@@ -314,8 +314,8 @@ def initAzureVoice():
     speech_key, service_region = config["AZURE_ISABELLA_KEY"], config["AZURE_SPEECH_REGION"]
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     # Creates a speech synthesizer using the default speaker as audio output.
-    
-    return speech_config
+    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+    return speech_config, speech_synthesizer
 
 
 def speakAzure(speech_config:SpeechConfig, text:str="",voice:str="en-GB-OliviaNeural")->bool:
@@ -357,8 +357,10 @@ def logic():
     global stability_api
     global speech_config
     global speech_synthesizer
-    speech_config = initAzureVoice()
-    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+    config = dotenv_values(".env")
+    if config["TEXT_TO_SPEECH_TYPE"] == "azure":
+        speech_config, speech_synthesizer = initAzureVoice()
+    
 
     if running:
         return
@@ -389,7 +391,7 @@ def logic():
             dprint ('--------------------------------------')
     current_image = 0
     load_image()
-    config = dotenv_values(".env")
+    
     image_generator_type = config["IMAGE_GENERATOR_TYPE"]
     match image_generator_type:
         case "stability.ai":
