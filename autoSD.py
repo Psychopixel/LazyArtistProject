@@ -18,6 +18,7 @@ from PIL import Image, PngImagePlugin
 from contextlib import contextmanager
 import azure.cognitiveservices.speech as speechsdk
 from azure.cognitiveservices.speech import SpeechConfig
+from elevenlabs import generate, play, voices, set_api_key
 from dotenv import dotenv_values
 from threading import Timer
 from stability_sdk import client as st_client
@@ -269,7 +270,7 @@ def simulate_typing(text,  color, chunk_size=5, delay=0.03):
         window['-AGENT-CHATLOG-'].print('\n', text_color=color, end='')
 
 def split_string(input_string):
-    split_chars = ["\n", "!", "."]  # Characters to split the string
+    split_chars = ["\n", "."]  # Characters to split the string
 
     # Join the split characters into a regular expression pattern
     pattern = "|".join(map(re.escape, split_chars))
@@ -305,6 +306,28 @@ def print_png_params(filename):
         else:
             print(f'{filename} is not a PNG image')
             return ''
+
+
+def speak(text:str, voice:str)->bool:
+    config = dotenv_values(".env")
+    voice_type = config["TEXT_TO_SPEECH_TYPE"]
+    if voice_type=="azure":
+        result = speakAzure(speech_config, text, voice)
+        return result
+    elif voice_type=="eleven":
+        audio = generate(
+            text=text,
+            voice=voice,
+            model='eleven_multilingual_v1'
+        )
+        play(audio)
+        return True
+
+def stopSpeak():
+    config = dotenv_values(".env")
+    voice_type = config["TEXT_TO_SPEECH_TYPE"]
+    if voice_type=="azure":
+        stopSpeakAzure()
 
 def initAzureVoice():
     # Creates an instance of a speech config with specified subscription key and service region.
@@ -359,7 +382,15 @@ def logic():
     global speech_synthesizer
     config = dotenv_values(".env")
     if config["TEXT_TO_SPEECH_TYPE"] == "azure":
+        agent069_voice = "en-GB-OliviaNeural"
+        agent007_voice = "en-US-AmberNeural"
         speech_config, speech_synthesizer = initAzureVoice()
+    elif config["TEXT_TO_SPEECH_TYPE"] == "eleven":
+        eleven_api_key = config["ELEVEN_API_KEY"]
+        set_api_key(eleven_api_key)
+        agentVoice = voices()
+        agent069_voice = "Mona"
+        agent007_voice = "Sloane"
     
 
     if running:
@@ -431,9 +462,6 @@ def logic():
     conversation1 = []
     conversation2 = []
 
-    agent069_voice = "en-GB-OliviaNeural"
-    agent007_voice = "en-US-AmberNeural"
-
     num_image_desired = 10  # Number of images to be created (you can adjust this value)
 
     # Read the content of the files containing the chatbots' prompts
@@ -466,7 +494,7 @@ def logic():
                 chat.append(chat_row)
                 if running:
                     updateScreen(chat)
-                    result = speakAzure(speech_config, voicetext, agent069_voice)
+                    result = speak(voicetext, agent069_voice)
                 voicetext = ''
                 talking = 'Sloane Canvasdale'
             response = chatgpt(conversation1, chatbot1, user_message)
@@ -481,7 +509,7 @@ def logic():
                 chat.append(chat_row)
                 if running:
                     updateScreen(chat)
-                    result = speakAzure(speech_config, voicetext, agent007_voice)
+                    result = speak(voicetext, agent007_voice)
                 talking = 'Mona Graffiti'
                 window.refresh()
                 image_path=''
@@ -509,7 +537,7 @@ def logic():
                     chat.append(chat_row)
                     if running:
                         updateScreen(chat)
-                        result = speakAzure(speech_config, voicetext, agent069_voice)
+                        result = speak(voicetext, agent069_voice)
                     voicetext = ''
                     talking = ''
                     window.refresh()
@@ -527,7 +555,7 @@ def closeProgram():
     global running
     loop = False
     running = False
-    stopSpeakAzure()
+    stopSpeak()
     try:
         rt.stop() # better in a try/finally block to make sure the program ends!
     finally:
