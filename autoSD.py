@@ -267,6 +267,19 @@ def simulate_typing(text,  color, chunk_size=5, delay=0.03):
     if running:
         window['-AGENT-CHATLOG-'].print('\n', text_color=color, end='')
 
+def split_string(input_string):
+    split_chars = ["\n", "!", "."]  # Characters to split the string
+
+    # Join the split characters into a regular expression pattern
+    pattern = "|".join(map(re.escape, split_chars))
+
+    # Split the input string using the pattern
+    split_list = re.split(pattern, input_string)
+
+    # Remove any empty strings from the split list
+    split_list = [string for string in split_list if string]
+
+    return split_list
 
 def updateScreen(chat):
     global running
@@ -309,20 +322,22 @@ def speakAzure(speech_config:SpeechConfig, text:str="",voice:str="en-GB-OliviaNe
     global speech_synthesizer
     speech_config.speech_synthesis_voice_name = voice
     speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
-    result= speech_synthesizer.speak_text_async(text).get()
-    # Checks result.
-    if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-        dprint("Speech synthesized to speaker for text [{}]".format(text))
-        return True
-    elif result.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result.cancellation_details
-        dprint("Speech synthesis canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            if cancellation_details.error_details:
-                dprint("Error details: {}".format(cancellation_details.error_details))
-        dprint("WTF?")
-        return False
-
+    text_list = split_string(text)
+    for t in text_list:
+        result= speech_synthesizer.speak_text_async(t).get()
+        # Checks result.
+        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            dprint("Speech synthesized to speaker for text [{}]".format(t))
+        elif result.reason == speechsdk.ResultReason.Canceled:
+            cancellation_details = result.cancellation_details
+            dprint("Speech synthesis canceled: {}".format(cancellation_details.reason))
+            if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                if cancellation_details.error_details:
+                    dprint("Error details: {}".format(cancellation_details.error_details))
+            dprint("WTF?")
+            return False
+    return True
+        
 def stopSpeakAzure():
     global speech_synthesizer
     if speech_synthesizer != "":

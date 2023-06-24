@@ -1,3 +1,10 @@
 *.jpg
 *.png
 .env
+*.pyc
+*.pyd
+*.dll
+*.hash
+*.pxi
+*.pyx
+venv.bat
