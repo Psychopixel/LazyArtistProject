@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 from io import BytesIO
 import io
 import os
+import re
 from PIL import Image
 import requests, json
 import openai
