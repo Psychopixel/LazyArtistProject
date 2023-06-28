@@ -19,7 +19,7 @@ from contextlib import contextmanager
 import azure.cognitiveservices.speech as speechsdk
 from azure.cognitiveservices.speech import SpeechConfig
 from elevenlabs import generate, play, voices, set_api_key
-from dotenv import dotenv_values
+from dotenv import dotenv_values, find_dotenv
 from threading import Timer
 from stability_sdk import client as st_client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as stability_generation
@@ -169,7 +169,6 @@ def generate_image(payload):
     ds = d.isoformat().replace(':','-').replace('.','-')
     image_filename = 'img'+ds+'.png'
     pnginfo = PngImagePlugin.PngInfo()
-    config = dotenv_values(".env")
     image_generator = config["IMAGE_GENERATOR_TYPE"]
     if(image_generator == "stablediffusion" or image_generator == "automatic"):
         response = requests.post(url=f'{image_generator_url}/sdapi/v1/txt2img', json=payload)
@@ -235,9 +234,7 @@ def generate_image(payload):
                         return image_filename
     else:
         return ""
-
-                
-        
+     
 
 def generate_thumbnail(image_filename):
     size = 65, 65
@@ -309,7 +306,6 @@ def print_png_params(filename):
 
 
 def speak(text:str, voice:str)->bool:
-    config = dotenv_values(".env")
     voice_type = config["TEXT_TO_SPEECH_TYPE"]
     if voice_type=="azure":
         result = speakAzure(speech_config, text, voice)
@@ -324,7 +320,6 @@ def speak(text:str, voice:str)->bool:
         return True
 
 def stopSpeak():
-    config = dotenv_values(".env")
     voice_type = config["TEXT_TO_SPEECH_TYPE"]
     if voice_type=="azure":
         stopSpeakAzure()
@@ -380,7 +375,7 @@ def logic():
     global stability_api
     global speech_config
     global speech_synthesizer
-    config = dotenv_values(".env")
+
     if config["TEXT_TO_SPEECH_TYPE"] == "azure":
         agent069_voice = "en-GB-OliviaNeural"
         agent007_voice = "en-US-AmberNeural"
@@ -564,7 +559,12 @@ def closeProgram():
     window.close()
 
 #--------------------------------------------
+global config
+if (find_dotenv()==""):
+    print("File Configurazione mancante")
+    sys.exit(1)
 
+config = dotenv_values(find_dotenv())
 #sg.theme_previewer()
 sg.theme('DarkGrey15')
 
@@ -604,7 +604,6 @@ parentDirectory = os.path.dirname(fileDirectory)
 #Navigate to Strings directory
 newPath = os.path.join(parentDirectory, 'keys')   
 
-config = dotenv_values(".env")
 openai.api_key = config["OPENAI_API_KEY"]
 
 
