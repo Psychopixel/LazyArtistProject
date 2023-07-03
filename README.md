@@ -7,14 +7,15 @@ This is a modification and implementation of a script from Kristian from https:/
 you should have an .env file in the path up to this repository. the .env should be like this
 
 '''
-# -------------------------------------------------------------------------------------------------
-# define which image generator to use, could be: stability.ai, stablediffusion, automatic, dall-e
+# -------------------------------------------------------
+# define which image generator to use,
+# could be: stability.ai, stablediffusion, automatic, dall-e
 IMAGE_GENERATOR_TYPE=stability.ai
 # stable diffusion should already been started
 STABLEDIFFUSION_PORT=your stable diffusion port goes here
 # you can also use automatic, should already been started
 STABLEDIFFUSION_HOST=http://127.0.0.1:
-AUTOMATIC_PORT=7860
+AUTOMATIC_PORT=your automatic port goes here
 AUTOMATIC_HOST=http://127.0.0.1:
 # stabilityai
 STABILITY_HOST=grpc.stability.ai:
@@ -32,7 +33,7 @@ AZURE_SPEECH_API_KEY=your azure key goes here
 AZURE_SPEECH_ENDPOINT= your endpoint for azure speech goes here
 AZURE_SPEECH_REGION= your azure region goes here
 ELEVEN_API_KEY=your elevenlabs key goes here
-# ----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------
 '''
 
 it's still a working in progress, if you find bugs please let me know
