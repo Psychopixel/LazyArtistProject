@@ -6,6 +6,7 @@ This is a modification and implementation of a script from Kristian from https:/
 
 you should have an .env file in the path up to this repository. the .env should be like this
 
+'''
 # -------------------------------------------------------------------------------------------------
 # define which image generator to use, could be: stability.ai, stablediffusion, automatic, dall-e
 IMAGE_GENERATOR_TYPE=stability.ai
@@ -32,7 +33,7 @@ AZURE_SPEECH_ENDPOINT= your endpoint for azure speech goes here
 AZURE_SPEECH_REGION= your azure region goes here
 ELEVEN_API_KEY=your elevenlabs key goes here
 # ----------------------------------------------------------------------------------------------------
-
+'''
 
 it's still a working in progress, if you find bugs please let me know
 
