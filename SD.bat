@@ -1,1 +1,0 @@
-call python autosd.py
