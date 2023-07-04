@@ -64,7 +64,8 @@ def get_completion_from_messages(
         messages, 
         model="gpt-3.5-turbo",
         temperature=0, 
-        frequency_penalty=0.2, 
+        frequency_penalty=0.2,
+        presence_penalty=0,
         max_tokens=500):
     
     response = chatCompletion_with_backoff(
@@ -72,6 +73,7 @@ def get_completion_from_messages(
         model=model,
         temperature=temperature, # this is the degree of randomness of the model's output
         frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty,
         max_tokens=max_tokens, # the maximum number of tokens the model can ouptut 
     )
 

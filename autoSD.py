@@ -149,7 +149,8 @@ def chatgpt(conversation, chatbot, user_input, temperature=0.75, frequency_penal
     prompt = [{"role": "system", "content": chatbot}]
     messages_input.insert(0, prompt[0])
     model = config["CHAT_MODEL"]
-    completion = robAiUtility.get_completion_from_messages(
+    # Extract the chatbot's response from the API response
+    chat_response = robAiUtility.get_completion_from_messages(
         messages=messages_input,
         model=model,
         temperature=temperature,
@@ -166,7 +167,7 @@ def chatgpt(conversation, chatbot, user_input, temperature=0.75, frequency_penal
     #     messages=messages_input)
 
     # Extract the chatbot's response from the API response
-    chat_response = completion['choices'][0]['message']['content']
+    #chat_response = completion['choices'][0]['message']['content']
 
     # Update conversation by appending the chatbot's response
     conversation.append({"role": "assistant", "content": chat_response})
