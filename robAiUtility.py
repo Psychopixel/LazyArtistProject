@@ -56,7 +56,7 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message["content"]
 
-@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+@retry(wait=wait_random_exponential(min=5, max=60), stop=stop_after_attempt(6))
 def chatCompletion_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
 

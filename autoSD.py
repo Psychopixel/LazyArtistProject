@@ -116,9 +116,12 @@ def load_image(current_image_number=0):
             image = Image.open("images\\"+images_list[current_image_number]["url"])
             bio = io.BytesIO()
             image.save(bio, format="PNG")
-            window['-CURRENT_IMAGE-'].update(data=bio.getvalue())
-            window['-CAPTION-'].update(images_list[current_image_number]["caption"])
-            window.refresh()
+            try:
+                window['-CURRENT_IMAGE-'].update(data=bio.getvalue())
+                window['-CAPTION-'].update(images_list[current_image_number]["caption"])
+                window.refresh()
+            except:
+                pass
             return
         else:
             dprint("Image " + images_list[current_image_number]["url"] + " not found")
@@ -156,20 +159,8 @@ def chatgpt(conversation, chatbot, user_input, temperature=0.75, frequency_penal
         temperature=temperature,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
-        max_tokens = 200,
+        max_tokens = 250,
         )
-    # completion = openai.ChatCompletion.create(
-    #     model=model,
-    #     temperature=temperature,
-    #     frequency_penalty=frequency_penalty,
-    #     presence_penalty=presence_penalty,
-    #     max_tokens = 200,
-    #     messages=messages_input)
-
-    # Extract the chatbot's response from the API response
-    #chat_response = completion['choices'][0]['message']['content']
-
-    # Update conversation by appending the chatbot's response
     conversation.append({"role": "assistant", "content": chat_response})
 
     # Return the chatbot's response
@@ -231,15 +222,15 @@ def generate_image(payload):
                             "Please modify the prompt and try again.")
                     if artifact.type == stability_generation.ARTIFACT_IMAGE:
                         image = Image.open(io.BytesIO(artifact.binary))
-                        parameters= ""
-                        parameters += payload["prompt"] + " "
-                        parameters += "Steps: " + str(payload["steps"]) + ", "
-                        parameters += "Sampler: SAMPLER_K_DPMPP_2M, "
-                        parameters += "CFG Scale: 8.0" + ", "
-                        parameters += "Seed: " + str(seed) + ", "
-                        parameters += "Size: 512x512"
-                        parameters += "Model hash: ?, "
-                        parameters += "Model: stabilityai"
+                        parameters = {}
+                        parameters["prompt"] = payload["prompt"]
+                        parameters["Steps"] = str(payload["steps"])
+                        parameters["Sampler"] = "SAMPLER_K_DPMPP_2M"
+                        parameters["CFG Scale"] = "8"
+                        parameters["Seed"] =str(seed)
+                        parameters["Size"] = "512x512"
+                        parameters["Model hash"] = "?"
+                        parameters["Model"] = "stabilityai"
                         pnginfo.add_text("parameters", str(parameters))
                         image.save("images\\"+image_filename, pnginfo=pnginfo)
                         generate_thumbnail(image_filename)
@@ -270,15 +261,20 @@ def print_colored(agent, text):
 
 def simulate_typing(text,  color, chunk_size=5, delay=0.03):
     global running
-    for i in range(0, len(text), chunk_size):
+    try:
+        for i in range(0, len(text), chunk_size):
+            if running:
+                chunk = text[i:i+chunk_size]
+                window['-AGENT-CHATLOG-'].print(chunk, text_color=color, end='')
+                window['-AGENT-CHATLOG-'].update()
+                time.sleep(delay)
+            
         if running:
-            chunk = text[i:i+chunk_size]
-            window['-AGENT-CHATLOG-'].print(chunk, text_color=color, end='')
-            window['-AGENT-CHATLOG-'].update()
-            time.sleep(delay)
-        
-    if running:
-        window['-AGENT-CHATLOG-'].print('\n', text_color=color, end='')
+            window['-AGENT-CHATLOG-'].print('\n', text_color=color, end='')
+    except:
+        pass
+    finally:
+        pass
 
 def split_string(input_string):
     split_chars = ["\n", "."]  # Characters to split the string
@@ -297,13 +293,16 @@ def split_string(input_string):
 def updateScreen(chat):
     global running
     global current_image
-    if running:
-        lastMsg = chat[len(chat)-1]
-        if lastMsg["agent"] == "Sloane Canvasdale":
-            simulate_typing(lastMsg["text"], 'yellow', chunk_size=5, delay=0.02)
-        if lastMsg["agent"] == "Mona Graffiti":
-            simulate_typing(lastMsg["text"], 'cyan', chunk_size=5, delay=0.02)
-        window['-AGENT-CHATLOG-'].update()
+    try:
+        if running:
+            lastMsg = chat[len(chat)-1]
+            if lastMsg["agent"] == "Sloane Canvasdale":
+                simulate_typing(lastMsg["text"], 'yellow', chunk_size=5, delay=0.02)
+            if lastMsg["agent"] == "Mona Graffiti":
+                simulate_typing(lastMsg["text"], 'cyan', chunk_size=5, delay=0.02)
+            window['-AGENT-CHATLOG-'].update()
+    except:
+        pass
 
 def print_png_params(filename):
     with open(filename, 'rb') as f:
@@ -389,10 +388,10 @@ def logic():
     global running
     global chat
     global talking
-    global wbApi
     global stability_api
     global speech_config
     global speech_synthesizer
+    global loop
 
     if config["TEXT_TO_SPEECH_TYPE"] == "azure":
         agent069_voice = "en-GB-OliviaNeural"
@@ -479,7 +478,6 @@ def logic():
 
     # Read the content of the files containing the chatbots' prompts
     chatbot1 = open_file('bot/Agent007_bot.txt')
-    chatbot1.replace('<<NUM_IMAGES>>', str(num_image_desired))
     chatbot2 = open_file('bot/Agent069_bot.txt')
 
     #cancello un eventuale precedente log
@@ -500,7 +498,6 @@ def logic():
             voicetext = ''
             voicetext = user_message
             voicetext = voicetext.replace('Response:', '')
-            voicetext = voicetext.replace('this for me?', 'this for me ?')
             if voicetext != '':
                 print_colored("Mona Graffiti", f"{voicetext}\n\n")
                 chat_row ={"agent":"Mona Graffiti", "text":voicetext+"\n", "url":'', "prompt":''}
@@ -543,7 +540,6 @@ def logic():
 
             # if Goodbye in message exit   
             if "Goodbye" in user_message:
-                voicetext = ''
                 if voicetext != '':
                     print_colored("Mona Graffiti", f"{voicetext}\n\n")
                     chat_row ={"agent":"Mona Graffiti", "text":voicetext, "url":'', "prompt":''}
@@ -551,14 +547,13 @@ def logic():
                     if running:
                         updateScreen(chat)
                         result = speak(voicetext, agent069_voice)
-                    voicetext = ''
-                    talking = ''
-                    window.refresh()
-                    running = False
-                    break
+                voicetext = ''
+                talking = ''
+                window.refresh()
+                closeProgram()
+                break
     finally:
-        rt.stop()
-    rt.stop()
+        pass
 
 def beforeExit():
     save_file("bot/ChatLog.txt", str(chat))
@@ -575,6 +570,7 @@ def closeProgram():
         rt.stop()
     beforeExit()
     window.close()
+    sys.exit(0)
 
 #--------------------------------------------
 global config
@@ -681,3 +677,4 @@ while loop:  # Event Loop
             current_image=0
         load_image(current_image)
 closeProgram()
+sys.exit(0)
