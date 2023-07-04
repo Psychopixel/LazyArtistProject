@@ -1,1 +1,0 @@
-[{'agent': 'Mona Graffiti', 'text': 'Hello Sloane Canvasdale, I am Mona Graffiti. How can i help you?\n', 'url': '', 'prompt': ''}]

@@ -25,9 +25,11 @@ from stability_sdk import client as st_client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as stability_generation
 import warnings
 import random 
+import robAiUtility
 
 
 DEBUG=True
+DO_SPEAK=False
 
 class RepeatedTimer(object):
     def __init__(self, interval, function, *args, **kwargs):
@@ -146,13 +148,22 @@ def chatgpt(conversation, chatbot, user_input, temperature=0.75, frequency_penal
     messages_input = conversation.copy()
     prompt = [{"role": "system", "content": chatbot}]
     messages_input.insert(0, prompt[0])
-
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+    model = config["CHAT_MODEL"]
+    completion = robAiUtility.get_completion_from_messages(
+        messages=messages_input,
+        model=model,
         temperature=temperature,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
-        messages=messages_input)
+        max_tokens = 200,
+        )
+    # completion = openai.ChatCompletion.create(
+    #     model=model,
+    #     temperature=temperature,
+    #     frequency_penalty=frequency_penalty,
+    #     presence_penalty=presence_penalty,
+    #     max_tokens = 200,
+    #     messages=messages_input)
 
     # Extract the chatbot's response from the API response
     chat_response = completion['choices'][0]['message']['content']
@@ -219,12 +230,20 @@ def generate_image(payload):
                             "Please modify the prompt and try again.")
                     if artifact.type == stability_generation.ARTIFACT_IMAGE:
                         image = Image.open(io.BytesIO(artifact.binary))
-                        parameters = {}
-                        parameters["seed"] = seed
-                        parameters["Sampler"] = stability_generation.SAMPLER_K_DPMPP_2M
-                        parameters["CFG Scale"] = "8.0"
-                        parameters["size"] = "512x512"
-                        parameters["model hash"] = ""
+                        parameters= ""
+                        parameters += payload["prompt"] + ", "
+                        parameters += "seed: " + str(seed) + ", "
+                        parameters += "sampler:" + str(stability_generation.SAMPLER_K_DPMPP_2M) + ", "
+                        parameters += "CFG Scale: 8.0" + ", "
+                        parameters += "model hash: , "
+                        parameters += "size: 512x512"
+                        # parameters = {}
+                        # parameters["seed"] = seed
+                        # parameters["Sampler"] = stability_generation.SAMPLER_K_DPMPP_2M
+                        # parameters["CFG Scale"] = "8.0"
+                        # parameters["size"] = "512x512"
+                        # parameters["model hash"] = ""
+                        # parameters["prompt"] = payload["prompt"]
                         pnginfo.add_text("parameters", str(parameters))
                         image.save("images\\"+image_filename, pnginfo=pnginfo)
                         generate_thumbnail(image_filename)
@@ -256,12 +275,11 @@ def print_colored(agent, text):
 def simulate_typing(text,  color, chunk_size=5, delay=0.03):
     global running
     for i in range(0, len(text), chunk_size):
-        if not running:
-            break
-        chunk = text[i:i+chunk_size]
-        window['-AGENT-CHATLOG-'].print(chunk, text_color=color, end='')
-        window['-AGENT-CHATLOG-'].update()
-        time.sleep(delay)
+        if running:
+            chunk = text[i:i+chunk_size]
+            window['-AGENT-CHATLOG-'].print(chunk, text_color=color, end='')
+            window['-AGENT-CHATLOG-'].update()
+            time.sleep(delay)
         
     if running:
         window['-AGENT-CHATLOG-'].print('\n', text_color=color, end='')
@@ -306,6 +324,9 @@ def print_png_params(filename):
 
 
 def speak(text:str, voice:str)->bool:
+    if DO_SPEAK==False:
+        time.sleep(2)
+        return True
     voice_type = config["TEXT_TO_SPEECH_TYPE"]
     if voice_type=="azure":
         result = speakAzure(speech_config, text, voice)
@@ -339,10 +360,11 @@ def initAzureVoice():
 def speakAzure(speech_config:SpeechConfig, text:str="",voice:str="en-GB-OliviaNeural")->bool:
     # Set the voice name, refer to https://aka.ms/speech/voices/neural for full list.
     global speech_synthesizer
-    speech_config.speech_synthesis_voice_name = voice
-    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+    
     text_list = split_string(text)
     for t in text_list:
+        speech_config.speech_synthesis_voice_name = voice
+        speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
         result= speech_synthesizer.speak_text_async(t).get()
         # Checks result.
         if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
@@ -354,7 +376,7 @@ def speakAzure(speech_config:SpeechConfig, text:str="",voice:str="en-GB-OliviaNe
                 if cancellation_details.error_details:
                     dprint("Error details: {}".format(cancellation_details.error_details))
             dprint("WTF?")
-            return False
+            return True
     return True
         
 def stopSpeakAzure():
