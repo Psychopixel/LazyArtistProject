@@ -232,19 +232,14 @@ def generate_image(payload):
                     if artifact.type == stability_generation.ARTIFACT_IMAGE:
                         image = Image.open(io.BytesIO(artifact.binary))
                         parameters= ""
-                        parameters += payload["prompt"] + ", "
-                        parameters += "seed: " + str(seed) + ", "
-                        parameters += "sampler:" + str(stability_generation.SAMPLER_K_DPMPP_2M) + ", "
+                        parameters += payload["prompt"] + " "
+                        parameters += "Steps: " + str(payload["steps"]) + ", "
+                        parameters += "Sampler: SAMPLER_K_DPMPP_2M, "
                         parameters += "CFG Scale: 8.0" + ", "
-                        parameters += "model hash: , "
-                        parameters += "size: 512x512"
-                        # parameters = {}
-                        # parameters["seed"] = seed
-                        # parameters["Sampler"] = stability_generation.SAMPLER_K_DPMPP_2M
-                        # parameters["CFG Scale"] = "8.0"
-                        # parameters["size"] = "512x512"
-                        # parameters["model hash"] = ""
-                        # parameters["prompt"] = payload["prompt"]
+                        parameters += "Seed: " + str(seed) + ", "
+                        parameters += "Size: 512x512"
+                        parameters += "Model hash: ?, "
+                        parameters += "Model: stabilityai"
                         pnginfo.add_text("parameters", str(parameters))
                         image.save("images\\"+image_filename, pnginfo=pnginfo)
                         generate_thumbnail(image_filename)
