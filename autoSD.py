@@ -19,6 +19,8 @@ from contextlib import contextmanager
 import azure.cognitiveservices.speech as speechsdk
 from azure.cognitiveservices.speech import SpeechConfig
 from elevenlabs import generate, play, voices, set_api_key
+from google.cloud import texttospeech
+import simpleaudio as sa
 from dotenv import dotenv_values, find_dotenv
 from threading import Timer
 from stability_sdk import client as st_client
@@ -29,7 +31,7 @@ import robAiUtility
 
 
 DEBUG=True
-DO_SPEAK=False
+DO_SPEAK=True
 
 class RepeatedTimer(object):
     def __init__(self, interval, function, *args, **kwargs):
@@ -317,6 +319,36 @@ def print_png_params(filename):
             print(f'{filename} is not a PNG image')
             return ''
 
+def playVoiceWithGoogle(text, language="en-US", voice:str=""):
+   
+    # Instantiates a client
+    client = texttospeech.TextToSpeechClient(client_options={"api_key": config["GOOGLE_APPLICATION_CREDENTIALS"], "quota_project_id": config["GOOGLE_PROJECT_ID"]})
+
+    # Set the text input to be synthesized
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+
+    # Build the voice request
+    if(voice==""):
+        return
+    else:
+        choose_voice = texttospeech.VoiceSelectionParams(
+            language_code=language, name=voice
+        )
+
+    # Select the type of audio file you want returned
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.LINEAR16
+    )
+
+    # Perform the text-to-speech request on the text input with the selected
+    # voice parameters and audio file type
+    response = client.synthesize_speech(
+        input=synthesis_input, voice=choose_voice, audio_config=audio_config
+    )
+  
+    wave_obj = sa.WaveObject(response.audio_content, 1, 2, 24000)
+    play_obj = wave_obj.play()
+    play_obj.wait_done()  # Wait until sound has finished playing
 
 def speak(text:str, voice:str)->bool:
     if DO_SPEAK==False:
@@ -325,6 +357,9 @@ def speak(text:str, voice:str)->bool:
     voice_type = config["TEXT_TO_SPEECH_TYPE"]
     if voice_type=="azure":
         result = speakAzure(speech_config, text, voice)
+        return result
+    elif voice_type=="google":
+        result = playVoiceWithGoogle(text, voice=voice)
         return result
     elif voice_type=="eleven":
         audio = generate(
@@ -403,6 +438,9 @@ def logic():
         agentVoice = voices()
         agent069_voice = "Mona"
         agent007_voice = "Sloane"
+    elif config["TEXT_TO_SPEECH_TYPE"] == "google":
+        agent069_voice = "en-US-Standard-C"
+        agent007_voice = "en-US-Standard-E"
     
 
     if running:
