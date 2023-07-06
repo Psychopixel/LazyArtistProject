@@ -28,6 +28,7 @@ import stability_sdk.interfaces.gooseai.generation.generation_pb2 as stability_g
 import warnings
 import random 
 import robAiUtility
+import robSpeak
 
 
 DEBUG=True
@@ -319,100 +320,6 @@ def print_png_params(filename):
             print(f'{filename} is not a PNG image')
             return ''
 
-def playVoiceWithGoogle(text, language="en-US", voice:str=""):
-   
-    # Instantiates a client
-    client = texttospeech.TextToSpeechClient(client_options={"api_key": config["GOOGLE_APPLICATION_CREDENTIALS"], "quota_project_id": config["GOOGLE_PROJECT_ID"]})
-
-    # Set the text input to be synthesized
-    synthesis_input = texttospeech.SynthesisInput(text=text)
-
-    # Build the voice request
-    if(voice==""):
-        return
-    else:
-        choose_voice = texttospeech.VoiceSelectionParams(
-            language_code=language, name=voice
-        )
-
-    # Select the type of audio file you want returned
-    audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.LINEAR16
-    )
-
-    # Perform the text-to-speech request on the text input with the selected
-    # voice parameters and audio file type
-    response = client.synthesize_speech(
-        input=synthesis_input, voice=choose_voice, audio_config=audio_config
-    )
-  
-    wave_obj = sa.WaveObject(response.audio_content, 1, 2, 24000)
-    play_obj = wave_obj.play()
-    play_obj.wait_done()  # Wait until sound has finished playing
-
-def speak(text:str, voice:str)->bool:
-    if DO_SPEAK==False:
-        time.sleep(2)
-        return True
-    voice_type = config["TEXT_TO_SPEECH_TYPE"]
-    if voice_type=="azure":
-        result = speakAzure(speech_config, text, voice)
-        return result
-    elif voice_type=="google":
-        result = playVoiceWithGoogle(text, voice=voice)
-        return result
-    elif voice_type=="eleven":
-        audio = generate(
-            text=text,
-            voice=voice,
-            model='eleven_multilingual_v1'
-        )
-        play(audio)
-        return True
-
-def stopSpeak():
-    voice_type = config["TEXT_TO_SPEECH_TYPE"]
-    if voice_type=="azure":
-        stopSpeakAzure()
-
-def initAzureVoice():
-    # Creates an instance of a speech config with specified subscription key and service region.
-    # Replace with your own subscription key and service region (e.g., "westus").
-    
-    os.environ["COGNITIVE_SERVICE_KEY"]=config["AZURE_ISABELLA_KEY"]
-    speech_key, service_region = config["AZURE_ISABELLA_KEY"], config["AZURE_SPEECH_REGION"]
-    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-    # Creates a speech synthesizer using the default speaker as audio output.
-    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
-    return speech_config, speech_synthesizer
-
-
-def speakAzure(speech_config:SpeechConfig, text:str="",voice:str="en-GB-OliviaNeural")->bool:
-    # Set the voice name, refer to https://aka.ms/speech/voices/neural for full list.
-    global speech_synthesizer
-    
-    text_list = split_string(text)
-    for t in text_list:
-        speech_config.speech_synthesis_voice_name = voice
-        speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
-        result= speech_synthesizer.speak_text_async(t).get()
-        # Checks result.
-        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            dprint("Speech synthesized to speaker for text [{}]".format(t))
-        elif result.reason == speechsdk.ResultReason.Canceled:
-            cancellation_details = result.cancellation_details
-            dprint("Speech synthesis canceled: {}".format(cancellation_details.reason))
-            if cancellation_details.reason == speechsdk.CancellationReason.Error:
-                if cancellation_details.error_details:
-                    dprint("Error details: {}".format(cancellation_details.error_details))
-            dprint("WTF?")
-            return True
-    return True
-        
-def stopSpeakAzure():
-    global speech_synthesizer
-    if speech_synthesizer != "":
-        speech_synthesizer.stop_speaking()
 
 #logica di funzionamento del programma
 def logic():
@@ -424,14 +331,14 @@ def logic():
     global chat
     global talking
     global stability_api
-    global speech_config
-    global speech_synthesizer
+    #global speech_config
+    #global speech_synthesizer
     global loop
 
     if config["TEXT_TO_SPEECH_TYPE"] == "azure":
         agent069_voice = "en-GB-OliviaNeural"
         agent007_voice = "en-US-AmberNeural"
-        speech_config, speech_synthesizer = initAzureVoice()
+        #speech_config, speech_synthesizer = initAzureVoice()
     elif config["TEXT_TO_SPEECH_TYPE"] == "eleven":
         eleven_api_key = config["ELEVEN_API_KEY"]
         set_api_key(eleven_api_key)
@@ -542,7 +449,7 @@ def logic():
                 chat.append(chat_row)
                 if running:
                     updateScreen(chat)
-                    result = speak(voicetext, agent069_voice)
+                    result = robSpeak.speakChat(voicetext, agent069_voice)
                 voicetext = ''
                 talking = 'Sloane Canvasdale'
             response = chatgpt(conversation1, chatbot1, user_message)
@@ -557,7 +464,7 @@ def logic():
                 chat.append(chat_row)
                 if running:
                     updateScreen(chat)
-                    result = speak(voicetext, agent007_voice)
+                    result = robSpeak.speakChat(voicetext, agent007_voice)
                 talking = 'Mona Graffiti'
                 window.refresh()
                 image_path=''
@@ -584,7 +491,7 @@ def logic():
                     chat.append(chat_row)
                     if running:
                         updateScreen(chat)
-                        result = speak(voicetext, agent069_voice)
+                        result = robSpeak.speakChat(voicetext, agent069_voice)
                 voicetext = ''
                 talking = ''
                 window.refresh()
@@ -594,21 +501,24 @@ def logic():
         pass
 
 def beforeExit():
-    save_file("bot/ChatLog.txt", str(chat))
+    try:
+        save_file("bot/ChatLog.txt", str(chat))
+    except:
+        pass
 
 def closeProgram():
     global loop
     global running
     loop = False
     running = False
-    stopSpeak()
+    robSpeak.stopSpeak()
     try:
         rt.stop() # better in a try/finally block to make sure the program ends!
     finally:
         rt.stop()
     beforeExit()
     window.close()
-    sys.exit(0)
+    os._exit(os.EX_OK)
 
 #--------------------------------------------
 global config
@@ -662,6 +572,8 @@ openai.api_key = config["OPENAI_API_KEY"]
 # Initialize colorama
 init()
 
+robSpeak.init()
+
 running = False
 rt = RepeatedTimer(1, logic) # it auto-starts, no need of rt.start()
 
@@ -684,15 +596,19 @@ while loop:  # Event Loop
     elif event != "__TIMEOUT__":
         if event in (sg.WIN_CLOSED, 'Exit'):
             loop = False
+            closeProgram()
             break
         elif event == sg.WIN_CLOSED or event == 'Exit':
             loop = False
+            closeProgram()
             break
         elif event == 'Escape:27':
             loop = False
+            closeProgram()
             break
         elif event == 'CTRL-Delete':
             loop = False
+            closeProgram()
             break
     if not loop:
         break
@@ -715,4 +631,4 @@ while loop:  # Event Loop
             current_image=0
         load_image(current_image)
 closeProgram()
-sys.exit(0)
+
