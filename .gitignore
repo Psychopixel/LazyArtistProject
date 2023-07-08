@@ -12,3 +12,5 @@ bot/ChatLog.txt
 bot/ChatLog.txt
 autoSD.code-workspace
 __pycache__/robAiUtility.cpython-311.pyc
+*.pyc
+*.pyc

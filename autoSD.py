@@ -4,29 +4,15 @@ import io
 import os
 import re
 from PIL import Image
-import requests, json
 import openai
 import time
 import sys
 import requests
-from PIL import PngImagePlugin
 from colorama import Fore, Style, init
-import datetime
-import base64
 import json
 from PIL import Image, PngImagePlugin
-from contextlib import contextmanager
-import azure.cognitiveservices.speech as speechsdk
-from azure.cognitiveservices.speech import SpeechConfig
-from elevenlabs import generate, play, voices, set_api_key
-from google.cloud import texttospeech
-import simpleaudio as sa
 from dotenv import dotenv_values, find_dotenv
 from threading import Timer
-from stability_sdk import client as st_client
-import stability_sdk.interfaces.gooseai.generation.generation_pb2 as stability_generation
-import warnings
-import random 
 import robAiUtility
 import robSpeak
 import robImageGenerator
@@ -60,18 +46,6 @@ class RepeatedTimer(object):
         self._timer.cancel()
         self.is_running = False
 
-
-# no terminal output
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:  
-            yield
-        finally:
-            sys.stdout = old_stdout
-
 def dprint(text:str):
     if DEBUG:
         print(text)
@@ -98,7 +72,7 @@ def remove_file(filepath):
     except Exception as e:
         dprint("Errore: Si è verificato un errore:", e)
 
-
+"""
 def image_to_data(im):
     with BytesIO() as output:
         im.save(output, format="PNG")
@@ -113,6 +87,8 @@ def get_data(imgURL):
     giy = image_to_data(img)
     return giy
 
+"""
+    
 def load_image(current_image_number=0):
     if len(images_list) > 0:
         dprint(images_list[current_image]["url"])
