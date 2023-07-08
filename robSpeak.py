@@ -117,9 +117,6 @@ def stopRecording():
     else:
         print("Nothing went wrong")
     bot = True
-    #chat_row ={"agent":"User", "text":response["text"]+"\n\n"}
-    #chat.append(chat_row)
-    #updateScreen(chat)
     recording = False
     p.terminate()
     return response
