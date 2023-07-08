@@ -7,9 +7,7 @@ from PIL import Image
 import openai
 import time
 import sys
-import requests
 from colorama import Fore, Style, init
-import json
 from PIL import Image, PngImagePlugin
 from dotenv import dotenv_values, find_dotenv
 from threading import Timer
