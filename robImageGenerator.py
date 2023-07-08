@@ -1,3 +1,4 @@
+version="<!#FV> 0.0.0 </#FV>"
 from PIL import Image, PngImagePlugin
 import requests, json
 from dotenv import dotenv_values, find_dotenv
