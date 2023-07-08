@@ -45,7 +45,22 @@ def read_string_to_list(input_string):
         print("Error: Invalid JSON string")
         return []  
     
+"""
+def image_to_data(im):
+    with BytesIO() as output:
+        im.save(output, format="PNG")
+        data = output.getvalue()
+    return data
 
+def get_data(imgURL):
+    imageURL = json.loads(requests.get(imgURL).content)["url"]
+    data = requests.get(imageURL).content
+    stream = BytesIO(data)
+    img = Image.open(stream)
+    giy = image_to_data(img)
+    return giy
+
+"""
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
     messages = [{"role": "user", "content": prompt}]

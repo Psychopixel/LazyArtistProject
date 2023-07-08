@@ -72,22 +72,6 @@ def remove_file(filepath):
     except Exception as e:
         dprint("Errore: Si è verificato un errore:", e)
 
-"""
-def image_to_data(im):
-    with BytesIO() as output:
-        im.save(output, format="PNG")
-        data = output.getvalue()
-    return data
-
-def get_data(imgURL):
-    imageURL = json.loads(requests.get(imgURL).content)["url"]
-    data = requests.get(imageURL).content
-    stream = BytesIO(data)
-    img = Image.open(stream)
-    giy = image_to_data(img)
-    return giy
-
-"""
     
 def load_image(current_image_number=0):
     if len(images_list) > 0:
@@ -225,18 +209,12 @@ def logic():
     global chat
     global talking
     global stability_api
-    #global speech_config
-    #global speech_synthesizer
     global loop
 
     if config["TEXT_TO_SPEECH_TYPE"] == "azure":
         agent069_voice = "en-GB-OliviaNeural"
         agent007_voice = "en-US-AmberNeural"
-        #speech_config, speech_synthesizer = initAzureVoice()
     elif config["TEXT_TO_SPEECH_TYPE"] == "eleven":
-        eleven_api_key = config["ELEVEN_API_KEY"]
-        set_api_key(eleven_api_key)
-        agentVoice = voices()
         agent069_voice = "Mona"
         agent007_voice = "Sloane"
     elif config["TEXT_TO_SPEECH_TYPE"] == "google":
@@ -274,46 +252,10 @@ def logic():
     current_image = 0
     load_image()
     
-    image_generator_type = config["IMAGE_GENERATOR_TYPE"]
-    match image_generator_type:
-        case "stability.ai":
-            port = config["STABILITY_PORT"]
-            host = config["STABILITY_HOST"]
-            image_generator_key = config["STABILITY_API_KEY"]
-            # Set up our connection to the API.
-            stability_api = st_client.StabilityInference(
-                key=image_generator_key, # API Key reference.
-                verbose=True, # Print debug messages.
-                engine="stable-diffusion-xl-beta-v2-2-2", # Set the engine to use for generation.
-                # Available engines: stable-diffusion-v1 stable-diffusion-v1-5 stable-diffusion-512-v2-0 stable-diffusion-768-v2-0
-                # stable-diffusion-512-v2-1 stable-diffusion-768-v2-1 stable-diffusion-xl-beta-v2-2-2 stable-inpainting-v1-0 stable-inpainting-512-v2-0
-            )
-        case "stablediffusion":
-            port = config["STABLEDIFFUSION_PORT"]
-            host = config["STABLEDIFFUSION_HOST"]
-            image_generator_key = ""
-        case "automatic":
-            port = config["AUTOMATIC_PORT"]
-            host = config["AUTOMATIC_HOST"]
-            image_generator_key = ""
-        case "dall-e":
-            port = config["DALL_E_PORT"]
-            host = config["DALL_E_HOST"]
-            image_generator_key = ""
-        case _:
-            print ("ERROR: NOT RECOGNISED IMAGE GENERATOR, USE STABILITY:AI")
-            port = config["STABILITY_PORT"]
-            host = config["STABILITY_HOST"]
-            image_generator_key = config["STABILITY_API_KEY"]
-
-    # url dell'image generator - Stable diffusion e Automatic devon essere già attivi
-    image_generator_url = host + port
-    
+   
     # Initialize two empty lists to store the conversations for each chatbot
     conversation1 = []
     conversation2 = []
-
-    num_image_desired = 10  # Number of images to be created (you can adjust this value)
 
     # Read the content of the files containing the chatbots' prompts
     chatbot1 = open_file('bot/Agent007_bot.txt')
