@@ -1,3 +1,4 @@
+version="<!#FV> 0.0.1 </#FV>"
 import os
 import openai
 import tiktoken
@@ -45,22 +46,7 @@ def read_string_to_list(input_string):
         print("Error: Invalid JSON string")
         return []  
     
-"""
-def image_to_data(im):
-    with BytesIO() as output:
-        im.save(output, format="PNG")
-        data = output.getvalue()
-    return data
 
-def get_data(imgURL):
-    imageURL = json.loads(requests.get(imgURL).content)["url"]
-    data = requests.get(imageURL).content
-    stream = BytesIO(data)
-    img = Image.open(stream)
-    giy = image_to_data(img)
-    return giy
-
-"""
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
     messages = [{"role": "user", "content": prompt}]
@@ -71,24 +57,19 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message["content"]
 
-@retry(wait=wait_random_exponential(min=5, max=80), stop=stop_after_attempt(6))
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def chatCompletion_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
 
-def get_completion_from_messages(
-        messages, 
-        model="gpt-3.5-turbo",
-        temperature=0, 
-        frequency_penalty=0.2,
-        presence_penalty=0,
-        max_tokens=500):
+def get_completion_from_messages(messages, 
+                                model="gpt-3.5-turbo", 
+                                temperature=0, 
+                                max_tokens=500):
     
     response = chatCompletion_with_backoff(
-        messages=messages,
         model=model,
+        messages=messages,
         temperature=temperature, # this is the degree of randomness of the model's output
-        frequency_penalty=frequency_penalty,
-        presence_penalty=presence_penalty,
         max_tokens=max_tokens, # the maximum number of tokens the model can ouptut 
     )
 
