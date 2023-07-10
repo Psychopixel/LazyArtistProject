@@ -379,14 +379,14 @@ img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", 
               sg.Image(source="gui/next.png", pad=(10),key="-NEXT-", enable_events=True),sg.Push()],
              [sg.Push(),sg.Text('', size=(80,10), key="-CAPTION-", font=('Arial 10'), border_width=2, relief=sg.RELIEF_GROOVE, pad=10),sg.Push()]]
 
-agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=3, pad=(20,10)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
-agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=3, pad=(20,10))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
-global talking
-agent_chat_column = [[sg.Push(),sg.Text('AGENTS CHAT LOG', font=('Arial 17'), text_color="#ebb806", pad = 10),sg.Push()],
-                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(170,15),autoscroll = True, 	disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
+agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=3, pad=(0,0)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
+agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=3, pad=(0,0))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
+
+agent_chat_column = [[sg.Push(),sg.Text('AGENTS CHAT LOG', font=('Arial 17'), text_color="#ebb806", pad = 5),sg.Push()],
+                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(170,15),autoscroll = True, disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
 
 layout = [  header_row, [sg.Column(agent069_column),sg.Push(),sg.Column(img_column),sg.Push(),sg.Column(agent007_column)], agent_chat_column,
-            [sg.Push(),sg.Button('Exit', pad=10)] ]
+            [sg.Push(),sg.Button('Exit', pad=30)] ]
 
 w,h = sg.Window.get_screen_size()
 titleBar = not psutil.MACOS
@@ -413,7 +413,7 @@ newPath = os.path.join(parentDirectory, 'keys')
 
 openai.api_key = config["OPENAI_API_KEY"]
 
-
+global talking
 # Initialize colorama
 init()
 
