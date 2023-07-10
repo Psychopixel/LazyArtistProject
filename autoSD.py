@@ -375,7 +375,7 @@ sg.theme('DarkGrey15')
 
 header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-150x150.png", pad=(10,10)),sg.Text('Roberto Scordino', font=('Arial 15')),
                sg.Push()], [sg.Push(), sg.Text('The Lazy Artist Project', pad=0, text_color="#ebb806"), sg.Push()]]
-img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-"),
+img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-", size=(512,512), subsample=3),
               sg.Image(source="gui/next.png", pad=(10),key="-NEXT-", enable_events=True),sg.Push()],
              [sg.Push(),sg.Text('', size=(80,10), key="-CAPTION-", font=('Arial 10'), border_width=2, relief=sg.RELIEF_GROOVE, pad=10),sg.Push()]]
 
