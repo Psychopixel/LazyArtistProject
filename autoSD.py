@@ -14,6 +14,7 @@ from threading import Timer
 import robAiUtility
 import robSpeak
 import robImageGenerator
+import psutil
 
 
 DEBUG=True
@@ -182,6 +183,12 @@ def updateScreen(chat):
             window['-AGENT-CHATLOG-'].update()
     except:
         pass
+# muove la finestra al centro dell schermo
+def move_window_center(window):
+    screen_width, screen_height = window.get_screen_size()
+    win_width, win_height = window.size
+    x,y = (screen_width-win_width)/2, (screen_height-win_height)/2
+    window.move(x,y)
 
 def print_png_params(filename):
     with open(filename, 'rb') as f:
@@ -367,23 +374,24 @@ config = dotenv_values(find_dotenv())
 sg.theme('DarkGrey15')
 
 header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-150x150.png", pad=(10,10)),sg.Text('Roberto Scordino', font=('Arial 15')),
-               sg.Push()], [sg.Push(), sg.Text('The Lazy Artist Project', pad=30, text_color="#ebb806"), sg.Push()]]
-img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(30), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-"),
-              sg.Image(source="gui/next.png", pad=(30),key="-NEXT-", enable_events=True),sg.Push()],
+               sg.Push()], [sg.Push(), sg.Text('The Lazy Artist Project', pad=0, text_color="#ebb806"), sg.Push()]]
+img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-"),
+              sg.Image(source="gui/next.png", pad=(10),key="-NEXT-", enable_events=True),sg.Push()],
              [sg.Push(),sg.Text('', size=(80,10), key="-CAPTION-", font=('Arial 10'), border_width=2, relief=sg.RELIEF_GROOVE, pad=10),sg.Push()]]
 
-agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=2, pad=(30,15)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
-agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=2, pad=(30,15))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
+agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=3, pad=(20,10)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
+agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=3, pad=(20,10))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
 global talking
 agent_chat_column = [[sg.Push(),sg.Text('AGENTS CHAT LOG', font=('Arial 17'), text_color="#ebb806", pad = 10),sg.Push()],
-                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(200,15),autoscroll = True, 	disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
+                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(170,15),autoscroll = True, 	disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
 
 layout = [  header_row, [sg.Column(agent069_column),sg.Push(),sg.Column(img_column),sg.Push(),sg.Column(agent007_column)], agent_chat_column,
-            [sg.Push(),sg.Button('Exit', pad=30)] ]
+            [sg.Push(),sg.Button('Exit', pad=10)] ]
 
-#window = sg.Window('The Lazy Artist Project', layout, no_titlebar=True, grab_anywhere=True)
-window = sg.Window('The Lazy Artist Project', layout, grab_anywhere=False, no_titlebar=True, margins=(0, 0), element_padding=(0, 0), location=(0,0), size=(sg.Window.get_screen_size()),
-                   keep_on_top=False, font='_ 25', finalize=True, return_keyboard_events=True)
+w,h = sg.Window.get_screen_size()
+titleBar = not psutil.MACOS
+window = sg.Window('The Lazy Artist Project', layout, grab_anywhere=False, no_titlebar=titleBar, margins=(0, 0), element_padding=(0, 0), location=(0,0), size=(w,h),
+                   keep_on_top=False, font='_ 25', finalize=True, return_keyboard_events=True).Finalize()
 window.bind("<Control-KeyPress-Delete>", "CTRL-Delete")
 window.bind("<Control-KeyPress-period>", "CTRL-Delete")
 
@@ -394,6 +402,7 @@ window['-CAPTION-'].Widget.configure(padx=5, pady=5)
 window['-CURRENT_IMAGE-'].Widget.configure(borderwidth=2)
 window['-CURRENT_IMAGE-'].Widget.configure(relief=sg.RELIEF_GROOVE)
 
+move_window_center(window)
 
 absolutepath = os.path.abspath(__file__)
 fileDirectory = os.path.dirname(absolutepath)
