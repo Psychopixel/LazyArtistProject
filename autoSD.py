@@ -393,8 +393,10 @@ layout = [  header_row, [sg.Column(agent069_column),sg.Push(),sg.Column(img_colu
 
 w,h = sg.Window.get_screen_size()
 titleBar = not psutil.MACOS
+resizable=psutil.MACOS
 window = sg.Window('The Lazy Artist Project', layout, grab_anywhere=False, no_titlebar=titleBar, margins=(0, 0), element_padding=(0, 0), location=(0,0), size=(w,h),
-                   keep_on_top=False, font='_ 25', finalize=True, return_keyboard_events=True).Finalize()
+                   keep_on_top=False, font='_ 25', finalize=True, return_keyboard_events=True, resizable=resizable).Finalize()
+window.Maximize()
 window.bind("<Control-KeyPress-Delete>", "CTRL-Delete")
 window.bind("<Control-KeyPress-period>", "CTRL-Delete")
 
