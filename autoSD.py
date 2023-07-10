@@ -373,17 +373,20 @@ config = dotenv_values(find_dotenv())
 #sg.theme_previewer()
 sg.theme('DarkGrey15')
 
-header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-150x150.png", pad=(10,10)),sg.Text('Roberto Scordino', font=('Arial 15')),
+header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-150x150.png", pad=(10,0)),sg.Text('Roberto Scordino', font=('Arial 15')),
                sg.Push()], [sg.Push(), sg.Text('The Lazy Artist Project', pad=0, text_color="#ebb806"), sg.Push()]]
-img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-", size=(512,512), subsample=3),
+img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-", size=(512,512), pad=(0,0)),
               sg.Image(source="gui/next.png", pad=(10),key="-NEXT-", enable_events=True),sg.Push()],
              [sg.Push(),sg.Text('', size=(80,10), key="-CAPTION-", font=('Arial 10'), border_width=2, relief=sg.RELIEF_GROOVE, pad=10),sg.Push()]]
+if(psutil.MACOS):
+    subSample=3
+else:
+    subSample=2
+agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=subSample, pad=(10,0)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
+agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=subSample, pad=(10,0))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
 
-agent069_column = [[sg.Image(source="gui/Agent069.png", size=(512,512), subsample=3, pad=(0,0)),sg.Push()],[sg.Push(),sg.Text('Mona Graffiti', font=('Arial 15'), text_color="#00ffff"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT069_GIF-", visible = True),sg.Push()]]
-agent007_column = [[sg.Push(),sg.Image(source="gui/Agent007.png", size=(512,512), subsample=3, pad=(0,0))],[sg.Push(),sg.Text('Sloane Canvasdale', font=('Arial 15'), text_color="#ffff00"),sg.Push()], [sg.Push(),sg.Image(source="gui/ajax-loader-empty.gif", pad=5, key="-AGENT007_GIF-", visible = True),sg.Push()]]
-
-agent_chat_column = [[sg.Push(),sg.Text('AGENTS CHAT LOG', font=('Arial 17'), text_color="#ebb806", pad = 5),sg.Push()],
-                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(170,15),autoscroll = True, disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
+agent_chat_column = [[sg.Push(),sg.Text('AGENTS CHAT LOG', font=('Arial 15'), text_color="#ebb806", pad = 5),sg.Push()],
+                     [sg.Push(),sg.Multiline(font=('Arial, 10'),size=(170,10),autoscroll = True, disabled=True, write_only=True, key="-AGENT-CHATLOG-"),sg.Push()]]
 
 layout = [  header_row, [sg.Column(agent069_column),sg.Push(),sg.Column(img_column),sg.Push(),sg.Column(agent007_column)], agent_chat_column,
             [sg.Push(),sg.Button('Exit', pad=30)] ]
