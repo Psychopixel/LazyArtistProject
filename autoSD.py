@@ -373,7 +373,7 @@ config = dotenv_values(find_dotenv())
 #sg.theme_previewer()
 sg.theme('DarkGrey15')
 
-header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-150x150.png", pad=(10,0)),sg.Text('Roberto Scordino', font=('Arial 15')),
+header_row = [[sg.Image(source="gui/logoRobertoScordinoTrasparenteScrittaBianca-85x93.png", pad=(20,10)),sg.Text('Roberto Scordino', font=('Arial 15')),
                sg.Push()], [sg.Push(), sg.Text('The Lazy Artist Project', pad=0, text_color="#ebb806"), sg.Push()]]
 img_column =[[sg.Push(),sg.Image(source="gui/prev.png", pad=(10), key="-PREV-", enable_events=True), sg.Image(source="gui/black.png", key="-CURRENT_IMAGE-", size=(512,512), pad=(0,0)),
               sg.Image(source="gui/next.png", pad=(10),key="-NEXT-", enable_events=True),sg.Push()],

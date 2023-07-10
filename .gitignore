@@ -14,3 +14,4 @@ autoSD.code-workspace
 __pycache__/robAiUtility.cpython-311.pyc
 *.pyc
 *.pyc
+gui/.DS_Store
