@@ -16,3 +16,10 @@ __pycache__/robAiUtility.cpython-311.pyc
 *.pyc
 gui/.DS_Store
 .DS_Store
+installer.txt
+dist/
+build/
+*.spec
+__pycache__/
+__pycache__/robAiUtility.cpython-311.pyc
+*.pyc
