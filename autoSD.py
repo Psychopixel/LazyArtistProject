@@ -13,7 +13,6 @@ from dotenv import dotenv_values, find_dotenv
 from threading import Timer
 import robAiUtility
 import robSpeak
-import robImageGenerator
 import psutil
 from sloane import Sloane
 from mona import Mona
@@ -267,8 +266,9 @@ def logic():
     # Start the conversation with ChatBot1's first message
     user_message = "Hello Sloane Canvasdale, I am Mona Graffiti. How can i help you?"
     talking = "Mona Graffiti"
+    window.refresh()
     if config["DO_SPEAK"]=="True":
-        robSpeak.robSpeak.speakChat(user_message, agent069_voice)
+        robSpeak.speakChat(user_message, agent069_voice)
     chat_row ={"agent":"Mona Graffiti", "text":user_message+"\n", "url":'', "prompt":''}
     chat.append(chat_row)
     updateScreen(chat)
@@ -279,8 +279,10 @@ def logic():
     try:
         # Update the loop where chatbots talk to each other
         while running:
-            sloane_answer = sloane.answer(mona_answer["text_response"])
+            # Sloane
             talking = 'Sloane Canvasdale'
+            sloane_answer = sloane.answer(mona_answer["text_response"])
+            window.refresh()
             chat_row ={"agent":"Sloane Canvasdale", "text":sloane_answer["text_response"]+"\n", "url":sloane_answer["image_path"], "prompt":sloane_answer["prompt"]}
             if sloane_answer["image_path"]!="":
                 images_list.append({"url":sloane_answer["image_path"], "caption":sloane_answer["prompt"]})
@@ -290,9 +292,10 @@ def logic():
             updateScreen(chat)
             window.refresh()
             
-
-            mona_answer = mona.answer(sloane_answer["text_response"])
+            # Mona
             talking = 'Mona Graffiti'
+            mona_answer = mona.answer(sloane_answer["text_response"])
+            window.refresh()
             chat_row ={"agent":"Mona Graffiti", "text":mona_answer["text_response"]+"\n", "url":"", "prompt":""}
             chat.append(chat_row)
             updateScreen(chat)

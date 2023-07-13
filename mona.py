@@ -1,16 +1,14 @@
 from dotenv import dotenv_values, find_dotenv
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferWindowMemory
-from langchain.memory import ConversationBufferMemory
 from langchain.prompts import (
     PromptTemplate,
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
 )
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
 import os
 import robSpeak
-from typing import Dict, Optional, Type
+from typing import Dict
 
 #-------------------------------------------------------------
 class Mona:
@@ -24,10 +22,13 @@ If you don't know which kind of image you want, ask Sloane to use her fantasy to
 
 When you don't want more image from Sloane use the command 'goodbay' otherwise use the command 'text_only'
 
+{chat_history}
+
+
 Your answer must allways be as this
 \n{format_instructions}\n
 
-The message from Sloane is: {query}
+The message from Sloane is: {input}
 """
 
         self.config = dotenv_values(find_dotenv())
@@ -46,14 +47,21 @@ The message from Sloane is: {query}
         format_instructions = self.output_parser.get_format_instructions()
 
         self.chat_llm = ChatOpenAI(model_name=self.model_name, temperature=self.temperature)
+        self.memory = ConversationBufferMemory(memory_key="chat_history")
 
-        self.prompt_template = ChatPromptTemplate(
-            messages=[
-                HumanMessagePromptTemplate.from_template(self.template_string+"\n{format_instructions}")  
-            ],
-            input_variables=["query"],
+        self.prompt_template = PromptTemplate(
+            template=self.template_string+"\n{format_instructions}",
+            input_variables=["chat_history", "input"],
             partial_variables={"format_instructions": format_instructions}
-            )
+        )
+
+        self.conversation = ConversationChain(  
+            llm=self.chat_llm,
+            verbose=True,
+            prompt=self.prompt_template,
+            memory=self.memory
+        )
+
         if self.config["TEXT_TO_SPEECH_TYPE"] == "azure":
             self.agent_voice = "en-GB-OliviaNeural"
         elif self.config["TEXT_TO_SPEECH_TYPE"] == "eleven":
@@ -63,9 +71,8 @@ The message from Sloane is: {query}
 
 
     def answer(self, text:str)->Dict:
-        query = self.prompt_template.format_prompt(query=text)
-        output = self.chat_llm(query.to_messages())
-        consultant_response_json=self.output_parser.parse(output.content)
+        output = self.conversation.predict(input=text)
+        consultant_response_json=self.output_parser.parse(output)
         if self.do_speak:
             robSpeak.speakChat(consultant_response_json["text_response"], self.agent_voice)
         return consultant_response_json

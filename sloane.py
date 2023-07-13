@@ -3,11 +3,9 @@ from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import (
     PromptTemplate,
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
 )
 from langchain.memory import ConversationBufferMemory
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.chains import ConversationChain
 from typing import Dict
 import os
 
@@ -20,7 +18,7 @@ class Sloane:
         self.name="Sloane Canvasdale"
         self.template_string = """You are very talented generative images artist. You have an huge knolodge of figurative art and artistic styles expecially related to modern and contemporany art. You know very well how to generate a prompt with a lot of details for an AI program that generate image based on a description.
 
-The user will give you a '''{query}''
+The user will give you a '''{input}''
 
 First you will analize the query to classify it in one of this three type
 
@@ -45,6 +43,7 @@ If was of type 3:
     4) when you are completely satisfied with the prompt you have created generate the image
 
 Remember for type 2 or 3 You shoud generate the image only when you have the final prompt
+You must not repeat the prompt in the text_response
 
 If type was 1:
     Your answer will be only a json containing the type, the command "text_only", the text_response, an empty prompt and an empty image_path
@@ -81,7 +80,9 @@ Some examples:
 
     -----
 
-The message from the user is: {query}"""
+    {chat_history}
+
+The message from the user is: {input}"""
         self.config = dotenv_values(find_dotenv())
         self.model_name = self.config["CHAT_MODEL"]
         self.temperature = 0.75
@@ -101,13 +102,19 @@ The message from the user is: {query}"""
         format_instructions = self.output_parser.get_format_instructions()
 
         self.chat_llm = ChatOpenAI(model_name=self.model_name, temperature=self.temperature)
+        self.memory = ConversationBufferMemory(memory_key="chat_history")
 
-        self.prompt_template = ChatPromptTemplate(
-            messages=[
-                HumanMessagePromptTemplate.from_template(self.template_string+"\n{format_instructions}")  
-            ],
-            input_variables=["query"],
+        self.prompt_template = PromptTemplate(
+            template=self.template_string+"\n{format_instructions}",
+            input_variables=["chat_history", "input"],
             partial_variables={"format_instructions": format_instructions}
+        )
+
+        self.conversation = ConversationChain(  
+            llm=self.chat_llm,
+            verbose=True,
+            prompt=self.prompt_template,
+            memory=self.memory
         )
 
         if self.config["TEXT_TO_SPEECH_TYPE"] == "azure":
@@ -119,9 +126,8 @@ The message from the user is: {query}"""
 
 
     def answer(self, text:str)->Dict:
-        query = self.prompt_template.format_prompt(query=text)
-        output = self.chat_llm(query.to_messages())
-        consultant_response_json=self.output_parser.parse(output.content)
+        output = self.conversation.predict(input=text)
+        consultant_response_json=self.output_parser.parse(output)
         consultant_response_json["image_path"]=""
         if(consultant_response_json["command"]=="image_to_generate"):
             payload={}
@@ -129,6 +135,7 @@ The message from the user is: {query}"""
             payload["steps"]=50
             image_path=robImageGenerator.generate_image(payload)
             consultant_response_json["image_path"]=image_path
+            consultant_response_json["text_response"]+=" Which is the next image you want?"
         if self.do_speak:
             robSpeak.speakChat(consultant_response_json["text_response"], self.agent_voice)
         return consultant_response_json
