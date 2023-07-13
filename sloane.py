@@ -49,56 +49,35 @@ Remember for type 2 or 3 You shoud generate the image only when you have the fin
 If type was 1:
     Your answer will be only a json containing the type, the command "text_only", the text_response, an empty prompt and an empty image_path
 If type was 2 or 3:
-    Your answer will be only a json containing the type, the command, the text response, the prompt and the image_path returned from the tool
+    Your answer will be only a json containing the type, the command "image_to_generate", the text response, the prompt and the image_path returned from the tool
 
-In any case your response will be allways a json with this five element: type, command, text_response, prompt, image_path
+In any case your json response will be allways a json with this five element: type, command, text_response, prompt, image_path
 You shoud generate the image only when you have the final prompt
 
 Some examples:
-    example of type 1
-
+    
     query: "How can I cook meat?"
 
-    type: 1
-    command: "text_only"
-    text_response: "As an artist I don't know how to cook meat, I suggest you to reas a cooking book"
-    prompt: ""
-    image_path: ""
+    Your response: "type": "1", "command": "text_only", "text_response": "As an artist I don't know how to cook meat, I suggest you to reas a cooking book", "prompt": "", "image_path": ""
     
     -----
-
-    example of type 1
 
     query: "Thank you! I really appreciate your work, I hope we could work togheter in the future"
 
-    type: 1
-    command: "text_only"
-    text_response: "Thank you! I was a pleasure to work with you! Have a nice day!"
-    prompt: ""
-    image_path: ""
+
+    Your response: "type": "1", "command": "text_only", "text_response": "Thank you! I was a pleasure to work with you! Have a nice day!", "prompt": "", "image_path": ""
 
     -----
-
-    example of type 2
 
     query: "I want you to create an image of a beatiful cat napping on a bed in the style of Salvator Dalì and Gustave Klimpt"
     
-    type: 2
-    command: "image_to_generate"
-    text_response: "I have generated a detailed prompt for an image generative AI. Your request is to create a black cat in a style that is a mix of Salvador Dalì and Gustav Klimt."
-    prompt: "a black cat napping on a bed in a surreal style inspired by the combination of Salvador Dalì and Gustav Klimt. The cat should have elongated limbs and a distorted body, reminiscent of Dalì's melting clocks. Its fur should be depicted with vibrant, swirling patterns and intricate gold leaf detailing, inspired by Klimt's use of decorative motifs. The background should incorporate elements of both artists' styles, with dreamlike landscapes and geometric patterns. Captivate the essence of Dalì's surrealism and Klimt's opulence in this unique portrayal of a black cat."
-    image_path: "img2023-07-09T18-38-49-974478.png"
+    Your reasponse: "type": "2", "command": "image_to_generate", "text_response": "I have generated a detailed prompt for an image generative AI. Your request is to create a black cat in a style that is a mix of Salvador Dalì and Gustav Klimt.", "prompt": "a black cat napping on a bed in a surreal style inspired by the combination of Salvador Dalì and Gustav Klimt. The cat should have elongated limbs and a distorted body, reminiscent of Dalì's melting clocks. Its fur should be depicted with vibrant, swirling patterns and intricate gold leaf detailing, inspired by Klimt's use of decorative motifs. The background should incorporate elements of both artists' styles, with dreamlike landscapes and geometric patterns. Captivate the essence of Dalì's surrealism and Klimt's opulence in this unique portrayal of a black cat.", "image_path": "img2023-07-09T18-38-49-974478.png"
+
     -----
-    
-    example of type 3
 
     query: "I don't have any idea of which image generate, could you suggest me one?"
 
-    type: 3
-    command: "image_to_generate"
-    text_response: "Sure! What about a an image of a peaceful beach at sunset with palm trees swaying in the gentle breeze?"
-    prompt: "an image of a peaceful beach at sunset with palm trees swaying in the gentle breeze. The golden rays of the sun should be casting a warm glow on the sand and the waves should be gently rolling onto the shore. There should be a beach chair with a colorful umbrella, inviting the viewer to relax and enjoy the tranquility of the scene."
-    image_path: "img2023-07-09T18-38-49-974478.png"
+    Your response: "type": "3", "command": "image_to_generate", "text_response": "Sure! What about a an image of a peaceful beach at sunset with palm trees swaying in the gentle breeze?", "prompt": "an image of a peaceful beach at sunset with palm trees swaying in the gentle breeze. The golden rays of the sun should be casting a warm glow on the sand and the waves should be gently rolling onto the shore. There should be a beach chair with a colorful umbrella, inviting the viewer to relax and enjoy the tranquility of the scene.", "image_path": "img2023-07-09T18-38-49-974478.png"
 
     -----
 
@@ -141,10 +120,7 @@ The message from the user is: {query}"""
 
     def answer(self, text:str)->Dict:
         query = self.prompt_template.format_prompt(query=text)
-
-        #consultant_response = self.chat_llm(query.to_messages())
         output = self.chat_llm(query.to_messages())
-        #consultant_response_json = json.loads(consultant_response.content)
         consultant_response_json=self.output_parser.parse(output.content)
         consultant_response_json["image_path"]=""
         if(consultant_response_json["command"]=="image_to_generate"):

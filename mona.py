@@ -39,8 +39,8 @@ The message from Sloane is: {query}
             self.do_speak=False
         os.environ["OPENAI_API_KEY"] = self.config["OPENAI_API_KEY"]
         self.response_schemas = [
-            ResponseSchema(name="command", description="the command that could be 'text_only' or 'goodbay'"),
-            ResponseSchema(name="text_response", description="the verbal response to the user"),
+            ResponseSchema(name="command", description="the command that could be 'text_only' or 'goodbye'"),
+            ResponseSchema(name="text_response", description="the verbal response"),
         ]
         self.output_parser = StructuredOutputParser.from_response_schemas(self.response_schemas)
         format_instructions = self.output_parser.get_format_instructions()

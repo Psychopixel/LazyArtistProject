@@ -15,7 +15,8 @@ import robAiUtility
 import robSpeak
 import robImageGenerator
 import psutil
-
+from sloane import Sloane
+from mona import Mona
 
 DEBUG=True
 DO_SPEAK=True
@@ -227,6 +228,9 @@ def logic():
         agent007_voice = "en-US-Standard-E"
     
 
+    mona = Mona()
+    sloane = Sloane()
+
     if running:
         return
     else:
@@ -256,90 +260,45 @@ def logic():
             dprint ('--------------------------------------')
     current_image = 0
     load_image()
-    
-   
-    # Initialize two empty lists to store the conversations for each chatbot
-    conversation1 = []
-    conversation2 = []
-
-    # Read the content of the files containing the chatbots' prompts
-    chatbot1 = open_file('bot/Agent007_bot.txt')
-    chatbot2 = open_file('bot/Agent069_bot.txt')
-
-    #cancello un eventuale precedente log
-    remove_file("bot/ChatLog.txt")
 
     #list containg the conversation
     chat=[]
-
+   
     # Start the conversation with ChatBot1's first message
     user_message = "Hello Sloane Canvasdale, I am Mona Graffiti. How can i help you?"
     talking = "Mona Graffiti"
+    if config["DO_SPEAK"]=="True":
+        robSpeak.robSpeak.speakChat(user_message, agent069_voice)
+    chat_row ={"agent":"Mona Graffiti", "text":user_message+"\n", "url":'', "prompt":''}
+    chat.append(chat_row)
+    updateScreen(chat)
+    window.refresh()
+    mona_answer = {}
+    mona_answer["command"]="text_only"
+    mona_answer["text_response"]=user_message
     try:
-        image_path=''
-        image_prompt=''
         # Update the loop where chatbots talk to each other
         while running:
+            sloane_answer = sloane.answer(mona_answer["text_response"])
+            talking = 'Sloane Canvasdale'
+            chat_row ={"agent":"Sloane Canvasdale", "text":sloane_answer["text_response"]+"\n", "url":sloane_answer["image_path"], "prompt":sloane_answer["prompt"]}
+            if sloane_answer["image_path"]!="":
+                images_list.append({"url":sloane_answer["image_path"], "caption":sloane_answer["prompt"]})
+                current_image = len(images_list)-1
+                load_image(current_image)
+            chat.append(chat_row)
+            updateScreen(chat)
             window.refresh()
-            voicetext = ''
-            voicetext = user_message
-            voicetext = voicetext.replace('Response:', '')
-            if voicetext != '':
-                print_colored("Mona Graffiti", f"{voicetext}\n\n")
-                chat_row ={"agent":"Mona Graffiti", "text":voicetext+"\n", "url":'', "prompt":''}
-                chat.append(chat_row)
-                if running:
-                    updateScreen(chat)
-                    result = robSpeak.speakChat(voicetext, agent069_voice)
-                voicetext = ''
-                talking = 'Sloane Canvasdale'
-            response = chatgpt(conversation1, chatbot1, user_message)
-            user_message = response
-            voicetext = str(user_message)
-            voicetext = voicetext.replace('Response:', '')
-            if voicetext != '':
-                voicetext = voicetext.replace('Image: generate_image:', ' ')
-                voicetext = voicetext.replace('Response:', '')
-                print_colored("Sloane Canvasdale", f"{voicetext}\n\n")
-                chat_row ={"agent":"Sloane Canvasdale", "text":voicetext+"\n", "url":image_path, "prompt":image_prompt}
-                chat.append(chat_row)
-                if running:
-                    updateScreen(chat)
-                    result = robSpeak.speakChat(voicetext, agent007_voice)
-                talking = 'Mona Graffiti'
-                window.refresh()
-                image_path=''
-                image_prompt=''
-                if "generate_image:" in user_message:
-                    image_prompt = user_message.split("generate_image:")[1].strip()
-                    payload = {   
-                    }
-                    payload['prompt'] = image_prompt
-                    payload['steps'] = 50
-                    image_path = robImageGenerator.generate_image(payload)
-                    if image_path != "":
-                        images_list.append({"url":image_path, "caption":payload["prompt"]})
-                        current_image = len(images_list)-1
-                        load_image(current_image)
-                    voicetext = ''
+            
 
-            response = chatgpt(conversation2, chatbot2, user_message)
-            user_message = response
-
-            # if Goodbye in message exit   
-            if "Goodbye" in user_message:
-                if voicetext != '':
-                    print_colored("Mona Graffiti", f"{voicetext}\n\n")
-                    chat_row ={"agent":"Mona Graffiti", "text":voicetext, "url":'', "prompt":''}
-                    chat.append(chat_row)
-                    if running:
-                        updateScreen(chat)
-                        result = robSpeak.speakChat(voicetext, agent069_voice)
-                voicetext = ''
-                talking = ''
-                window.refresh()
+            mona_answer = mona.answer(sloane_answer["text_response"])
+            talking = 'Mona Graffiti'
+            chat_row ={"agent":"Mona Graffiti", "text":mona_answer["text_response"]+"\n", "url":"", "prompt":""}
+            chat.append(chat_row)
+            updateScreen(chat)
+            window.refresh()
+            if mona_answer["command"]=="goodbye":
                 closeProgram()
-                break
     finally:
         pass
 
