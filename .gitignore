@@ -11,8 +11,6 @@ bot/ChatLog.txt
 bot/ChatLog.txt
 bot/ChatLog.txt
 autoSD.code-workspace
-__pycache__/robAiUtility.cpython-311.pyc
-*.pyc
 *.pyc
 gui/.DS_Store
 .DS_Store
@@ -21,5 +19,7 @@ dist/
 build/
 *.spec
 __pycache__/
-__pycache__/robAiUtility.cpython-311.pyc
+__pycache__/*.pyc
 *.pyc
+readPngParam.py
+

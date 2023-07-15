@@ -1,4 +1,4 @@
-version="<!#FV> 0.0.0 </#FV>"
+version="<!#FV> 0.0.2 </#FV>"
 from PIL import Image, PngImagePlugin
 import requests, json
 from dotenv import dotenv_values, find_dotenv
@@ -108,38 +108,49 @@ def generate_image(payload):
             )
             # Set up our warning to print to the console if the adult content classifier is tripped.
             # If adult content classifier is not tripped, save generated images.
-            for resp in answers:
-                for artifact in resp.artifacts:
-                    if artifact.finish_reason == stability_generation.FILTER:
-                        warnings.warn(
-                            "Your request activated the API's safety filters and could not be processed."
-                            "Please modify the prompt and try again.")
-                    if artifact.type == stability_generation.ARTIFACT_IMAGE:
-                        image = Image.open(io.BytesIO(artifact.binary))
-                        parameters = {}
-                        parameters["prompt"] = payload["prompt"]
-                        parameters["Steps"] = str(payload["steps"])
-                        parameters["Sampler"] = "SAMPLER_K_DPMPP_2M"
-                        parameters["CFG Scale"] = "8"
-                        parameters["Seed"] =str(seed)
-                        parameters["Size"] = "512x512"
-                        parameters["Model hash"] = "?"
-                        parameters["Model"] = "stabilityai"
-                        pnginfo.add_text("parameters", str(parameters))
-                        image.save("images\\"+image_filename, pnginfo=pnginfo)
-                        generate_thumbnail(image_filename)
-                        return image_filename
-                    
-                        images_list.append({"url":image_filename, "caption":payload["prompt"]})
-                        current_image = len(images_list)-1
-                        load_image(current_image)
-                        return image_filename
+            try:
+                for resp in answers:
+                    for artifact in resp.artifacts:
+                        if artifact.finish_reason == stability_generation.FILTER:
+                            warnings.warn(
+                                "Your request activated the API's safety filters and could not be processed."
+                                "Please modify the prompt and try again.")
+                        if artifact.type == stability_generation.ARTIFACT_IMAGE:
+                            image = Image.open(io.BytesIO(artifact.binary))
+
+                            parameters = ""
+                            parameters += payload["prompt"]+"\n"
+                            parameters += "Steps: " + str(payload["steps"])
+                            parameters += "Sampler: " + "SAMPLER_K_DPMPP_2M"
+                            parameters += "CFG scale: " + "8" 
+                            parameters += "Seed: " + str(seed)
+                            parameters += "Size: " + "512x512"
+                            parameters += "Model hash: " + "?"
+                            parameters += "Model: " + "stabilityai"
+                            pnginfo.add_text("parameters", parameters)
+                            #parameters["prompt"] = payload["prompt"]
+                            #parameters["Steps"] = str(payload["steps"])
+                            #parameters["Sampler"] = "SAMPLER_K_DPMPP_2M"
+                            #parameters["CFG Scale"] = "8"
+                            #parameters["Seed"] =str(seed)
+                            #parameters["Size"] = "512x512"
+                            #parameters["Model hash"] = "?"
+                            #parameters["Model"] = "stabilityai"
+                            #pnginfo.add_itxt("parameters", parameters)
+                            directory_separator = os.path.sep
+                            print("directory_separator: "+directory_separator)
+                            image.save("images"+directory_separator+image_filename, pnginfo=pnginfo)
+                            generate_thumbnail(image_filename)
+                            return image_filename
+            except:
+                print("Error")
     else:
         return ""
      
 
 def generate_thumbnail(image_filename):
     size = 65, 65
-    with Image.open('images\\'+image_filename) as im:
+    directory_separator = os.path.sep
+    with Image.open('images'+directory_separator+image_filename) as im:
         im.thumbnail(size)
-        im.save("images\\thumbs\\"+image_filename , "PNG")
+        im.save("images"+directory_separator+"thumbs"+directory_separator+image_filename , "PNG")

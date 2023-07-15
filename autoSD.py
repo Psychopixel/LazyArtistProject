@@ -3,6 +3,7 @@ from io import BytesIO
 import io
 import os
 import re
+import json
 from PIL import Image
 import openai
 import time
@@ -73,10 +74,11 @@ def remove_file(filepath):
 
     
 def load_image(current_image_number=0):
+    directory_separator=os.path.sep
     if len(images_list) > 0:
         dprint(images_list[current_image]["url"])
-        if os.path.exists("images\\"+images_list[current_image_number]["url"]):
-            image = Image.open("images\\"+images_list[current_image_number]["url"])
+        if os.path.exists("images"+directory_separator+images_list[current_image_number]["url"]):
+            image = Image.open("images"+directory_separator+images_list[current_image_number]["url"])
             bio = io.BytesIO()
             image.save(bio, format="PNG")
             try:
@@ -238,15 +240,16 @@ def logic():
     
     images_list=[]
     specific_word = "Steps:"
-    dir1 = './images'
-    dir2 = './images/thumbs'
+    directory_separator=os.path.sep
+    dir1 = 'images'
 
     dir1_files = os.listdir(dir1)
     for file in dir1_files:
         if file.endswith('.png'):
-            imgPath = dir1 + '/' + str(file)
+            imgPath = dir1 + directory_separator + str(file)
             dprint(imgPath)
             input_text = print_png_params(imgPath)
+            input_txt_json = json.loads(input_text)
             caption=''
             if specific_word in input_text:
                 steps_index = input_text.index(specific_word)
