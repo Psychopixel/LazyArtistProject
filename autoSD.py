@@ -249,7 +249,6 @@ def logic():
             imgPath = dir1 + directory_separator + str(file)
             dprint(imgPath)
             input_text = print_png_params(imgPath)
-            input_txt_json = json.loads(input_text)
             caption=''
             if specific_word in input_text:
                 steps_index = input_text.index(specific_word)
